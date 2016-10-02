@@ -44,7 +44,7 @@ def _insert(url):
     # dont send full thing in, just tim
     f, ext = os.path.splitext(fn)
 
-    time.sleep(0.3)
+    time.sleep(0.1)
 
     cnx = mysql.connector.connect(user='rq3', password='eB6rW4RMeV', host='gib.space', database='rq3_fcs')
     cursor = cnx.cursor()
@@ -82,7 +82,7 @@ def _santize_filter(f):
 def main():
     ac = len(sys.argv)
     if ac < 4:
-        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter>"
+        print "usage:", sys.argv[0], " <boardname - required> <page count>"
         print "\t boardname - short board name, eg 'k' for weapons board"
         print "\t page count - how many pages back to download. max is 10, recommend less than 5"
         return
