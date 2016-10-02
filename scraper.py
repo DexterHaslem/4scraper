@@ -49,25 +49,26 @@ def _santize_filter(f):
 
 def main():
     ac = len(sys.argv)
-    if ac < 2:
-        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter>"
+    if ac < 5:
+        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir>"
         print "\t boardname - short board name, eg 'k' for weapons board"
-        print "\t page count - how many pages back to download. default is 2"
+        print "\t page count - how many pages back to download. max is 10, recommend less than 5"
         print "\t ext filter - which file types to download, eg '.webm'. defaults to all"
+        print "\t destination directory to download files"
         return
 
-    pc = 2
-    ef = None
     b = sys.argv[1]
+    pc = int(sys.argv[2])
+    ef = _santize_filter(sys.argv[3])
+    dest = sys.argv[4]
 
-    if ac > 2:
-        pc = int(sys.argv[2])
-    if ac > 3:
-        ef = _santize_filter(sys.argv[3])
+    if not os.path.isdir(dest):
+        print "invalid directory"
+        return
 
     urls = get_files(b, pc, ef)
     for url in urls:
-        _download(url, getcwd())
+        _download(url, dest)
 
 if __name__ == "__main__":
     main()
