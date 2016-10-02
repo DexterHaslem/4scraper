@@ -35,8 +35,6 @@ def _insert(url):
     # dont send full thing in, just tim
     f, ext = os.path.splitext(fn)
 
-    time.sleep(0.1)
-
     cnx = mysql.connector.connect(user='rq3', password='eB6rW4RMeV', host='gib.space', database='rq3_fcs')
     cursor = cnx.cursor()
 
@@ -88,6 +86,8 @@ def main():
     print "got", len(urls), "files..."
 
     for url in urls:
+        # lot of broken pipe errors.. hmm..
+        time.sleep(0.625)
         _insert(url)
 
 
