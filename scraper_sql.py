@@ -81,8 +81,8 @@ def _santize_filter(f):
 
 def main():
     ac = len(sys.argv)
-    if ac < 4:
-        print "usage:", sys.argv[0], " <boardname - required> <page count>"
+    if ac < 3:
+        print "usage:", sys.argv[0], " <boardname> <page count>"
         print "\t boardname - short board name, eg 'k' for weapons board"
         print "\t page count - how many pages back to download. max is 10, recommend less than 5"
         return
