@@ -6,6 +6,7 @@ import mysql.connector
 import zlib
 import time
 
+
 def get_files(b, pc=3, pf=None):
     t = api._threads(b)
 
@@ -27,16 +28,6 @@ def get_files(b, pc=3, pf=None):
             ret.append(link)
 
     return ret
-
-
-def _download(url, dest):
-    try:
-        __, fn = ntpath.split(url)
-        fp = os.path.join(dest, fn)
-        if not os.path.isfile(fp):
-            api.download_file(url, fp)
-    except IOError as ioe:
-        print "failed to download", url, ioe
 
 
 def _insert(url):
@@ -63,6 +54,7 @@ def _insert(url):
             try:
                 cursor.execute(add_entry_sql, (f, compressed))
                 cnx.commit()
+                print "uploaded", f + ext
             except mysql.connector.errors.OperationalError as e:
                 print "WARN: insert failed - ", e
 
@@ -92,6 +84,9 @@ def main():
     # ef = _santize_filter(sys.argv[3])
     ef = '.webm'
     urls = get_files(b, pc, ef)
+
+    print "got", len(urls), "files..."
+
     for url in urls:
         _insert(url)
 
