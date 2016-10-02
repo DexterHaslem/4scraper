@@ -2,6 +2,9 @@ import api
 import os.path
 import ntpath
 import sys
+import mysql.connector
+import zlib
+import time
 
 def get_files(b, pc=3, pf=None):
     t = api._threads(b)
@@ -36,6 +39,37 @@ def _download(url, dest):
         print "failed to download", url, ioe
 
 
+def _insert(url):
+    __, fn = ntpath.split(url)
+    # dont send full thing in, just tim
+    f, ext = os.path.splitext(fn)
+
+    time.sleep(0.3)
+
+    cnx = mysql.connector.connect(user='rq3', password='eB6rW4RMeV', host='gib.space', database='rq3_fcs')
+    cursor = cnx.cursor()
+
+    check_sql = ("select id from reqs where fn = %(fn)s")
+    add_entry_sql = ("insert into reqs (fn, fc) values (%s, %s)")
+    cursor.execute(check_sql, {'fn': f})
+    rows = cursor.fetchall()
+
+    if not rows:  # cursor.rowcount < 1: # returns -1 on no records for some reason
+        fc = api.get_raw(url)
+        compressed = zlib.compress(fc.data)
+        bytesize = sys.getsizeof(compressed)
+        megsize = bytesize / (1024 * 1024)
+        if megsize < 4:
+            try:
+                cursor.execute(add_entry_sql, (f, compressed))
+                cnx.commit()
+            except mysql.connector.errors.OperationalError as e:
+                print "WARN: insert failed - ", e
+
+    cursor.close()
+    cnx.close()
+
+
 def _santize_filter(f):
     if not f:
         return None
@@ -47,26 +81,20 @@ def _santize_filter(f):
 
 def main():
     ac = len(sys.argv)
-    if ac < 5:
-        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir>"
+    if ac < 4:
+        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter>"
         print "\t boardname - short board name, eg 'k' for weapons board"
         print "\t page count - how many pages back to download. max is 10, recommend less than 5"
-        print "\t ext filter - which file types to download, eg '.webm'. defaults to all"
-        print "\t destination directory to download files"
         return
 
     b = sys.argv[1]
     pc = int(sys.argv[2])
-    ef = _santize_filter(sys.argv[3])
-    dest = sys.argv[4]
-
-    if not os.path.isdir(dest):
-        print "invalid directory"
-        return
-
+    # ef = _santize_filter(sys.argv[3])
+    ef = '.webm'
     urls = get_files(b, pc, ef)
     for url in urls:
-        _download(url, dest)
+        _insert(url)
+
 
 if __name__ == "__main__":
     main()
