@@ -5,19 +5,19 @@ import sys
 
 from fuzzywuzzy import fuzz
 
-KEYWORD_LD_RATIO = 50
+KEYWORD_LD_RATIO = 65
 
 
 def _thread_passes(tn, title):
     if not tn:
         return True
 
-    ratio = fuzz.ratio(tn, title)
+    ratio = fuzz.token_set_ratio(tn, title)
 
-    if ratio > KEYWORD_LD_RATIO * 0.5:
+    if ratio > KEYWORD_LD_RATIO * 0.7:
         print tn, ":", title, "=", ratio
 
-    return ratio >= KEYWORD_LD_RATIO * 0.75
+    return ratio >= KEYWORD_LD_RATIO
     # for kw in kws:
     #     ratio = fuzz.token_set_ratio(title, kw)
     #     if ratio > KEYWORD_LD_RATIO:
