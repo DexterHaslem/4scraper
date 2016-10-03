@@ -71,8 +71,7 @@ def _santize_filter(f):
 def main():
     ac = len(sys.argv)
     if ac < 5:
-        print "usage:", sys.argv[
-            0], " <boardname - required> <page count> <ext filter> <dest dir> <thread keywords .. >"
+        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir> <thread keywords .. >"
         print "\t boardname - short board name, eg 'k' for weapons board"
         print "\t page count - how many pages back to download. max is 10, recommend less than 5"
         print "\t ext filter - which file types to download, eg '.webm'. defaults to all"
