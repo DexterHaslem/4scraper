@@ -5,17 +5,16 @@ import sys
 
 from fuzzywuzzy import fuzz
 
-KEYWORD_LD_RATIO = 70
+KEYWORD_LD_RATIO = 65
 
-
-# from fuzzywuzzy import process
 
 def _thread_passes(kws, title):
     if not kws:
         return True
 
     for kw in kws:
-        ratio = fuzz.ratio(kw, title)
+        # ratio = fuzz.ratio(kw, title)
+        ratio = fuzz.token_set_ratio(title, kw)
         if ratio > KEYWORD_LD_RATIO:
             return True
 
@@ -24,7 +23,7 @@ def _thread_passes(kws, title):
 
 def get_files(b, pc=3, pf=None, kw=[]):
     # use catalog over threads because it has thread info
-    #t = api._threads(b)
+    # t = api._threads(b)
     t = api._catalog(b)
 
     recent = [x['threads'] for x in t if x['page'] <= pc]
@@ -34,7 +33,9 @@ def get_files(b, pc=3, pf=None, kw=[]):
     # todo: refactor
     for xs in recent:
         for st in xs:
-            if _thread_passes(kw, st['com']):
+            title = st.get('com', None)
+            if title and _thread_passes(kw, title):
+                print "downloading posts in thread '", title, "' due to match"
                 threadnos.append(st['no'])
 
     ret = []
