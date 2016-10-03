@@ -36,9 +36,12 @@ def get_files(b, pc=3, pf=None, tn=None):
     # todo: refactor
     for xs in recent:
         for st in xs:
-            title = st.get('com', None)
-            if title and _thread_passes(tn, title):
-                print "downloading posts in thread '", title, "' due to match"
+            comment = st.get('com', None)
+            sub = st.get('sub', None)
+            match_comment = comment and _thread_passes(tn, comment)
+            match_sub = sub and _thread_passes(tn, sub)
+            if match_comment or match_sub:
+                print "downloading posts in thread '", sub or comment, "' due to match"
                 threadnos.append(st['no'])
 
     ret = []
