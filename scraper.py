@@ -3,8 +3,29 @@ import os.path
 import ntpath
 import sys
 
-def get_files(b, pc=3, pf=None):
-    t = api._threads(b)
+from fuzzywuzzy import fuzz
+
+KEYWORD_LD_RATIO = 70
+
+
+# from fuzzywuzzy import process
+
+def _thread_passes(kws, title):
+    if not kws:
+        return True
+
+    for kw in kws:
+        ratio = fuzz.ratio(kw, title)
+        if ratio > KEYWORD_LD_RATIO:
+            return True
+
+    return False
+
+
+def get_files(b, pc=3, pf=None, kw=[]):
+    # use catalog over threads because it has thread info
+    #t = api._threads(b)
+    t = api._catalog(b)
 
     recent = [x['threads'] for x in t if x['page'] <= pc]
 
@@ -13,7 +34,8 @@ def get_files(b, pc=3, pf=None):
     # todo: refactor
     for xs in recent:
         for st in xs:
-            threadnos.append(st['no'])
+            if _thread_passes(kw, st['com']):
+                threadnos.append(st['no'])
 
     ret = []
     for tn in threadnos:
@@ -48,25 +70,31 @@ def _santize_filter(f):
 def main():
     ac = len(sys.argv)
     if ac < 5:
-        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir>"
+        print "usage:", sys.argv[
+            0], " <boardname - required> <page count> <ext filter> <dest dir> <thread keywords .. >"
         print "\t boardname - short board name, eg 'k' for weapons board"
         print "\t page count - how many pages back to download. max is 10, recommend less than 5"
         print "\t ext filter - which file types to download, eg '.webm'. defaults to all"
-        print "\t destination directory to download files"
+        print "\t destdir - destination directory to download files"
+        print "\t keywords - optional keywords to try to include threads by"
         return
 
     b = sys.argv[1]
     pc = int(sys.argv[2])
     ef = _santize_filter(sys.argv[3])
     dest = sys.argv[4]
+    kw = []
+    if ac > 4:
+        kw = sys.argv[5:]
 
     if not os.path.isdir(dest):
         print "invalid directory"
         return
 
-    urls = get_files(b, pc, ef)
+    urls = get_files(b, pc, ef, kw)
     for url in urls:
         _download(url, dest)
+
 
 if __name__ == "__main__":
     main()

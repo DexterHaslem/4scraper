@@ -10,8 +10,12 @@ def _boards():
     return _get("boards.json")
 
 
-def _threads(board):
-    return _get(board + "/threads.json")
+def _threads(b):
+    return _get(b + "/threads.json")
+
+
+def _catalog(b):
+    return _get(b + "/catalog.json")
 
 
 def _posts(b, tn):
