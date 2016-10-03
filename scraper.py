@@ -5,23 +5,26 @@ import sys
 
 from fuzzywuzzy import fuzz
 
-KEYWORD_LD_RATIO = 65
+KEYWORD_LD_RATIO = 50
 
 
-def _thread_passes(kws, title):
-    if not kws:
+def _thread_passes(tn, title):
+    if not tn:
         return True
 
-    for kw in kws:
-        # ratio = fuzz.ratio(kw, title)
-        ratio = fuzz.token_set_ratio(title, kw)
-        if ratio > KEYWORD_LD_RATIO:
-            return True
+    ratio = fuzz.ratio(tn, title)
 
-    return False
+    if ratio > KEYWORD_LD_RATIO * 0.5:
+        print tn, ":", title, "=", ratio
+
+    return ratio >= KEYWORD_LD_RATIO * 0.75
+    # for kw in kws:
+    #     ratio = fuzz.token_set_ratio(title, kw)
+    #     if ratio > KEYWORD_LD_RATIO:
+    #         return True
 
 
-def get_files(b, pc=3, pf=None, kw=[]):
+def get_files(b, pc=3, pf=None, tn=None):
     # use catalog over threads because it has thread info
     # t = api._threads(b)
     t = api._catalog(b)
@@ -34,7 +37,7 @@ def get_files(b, pc=3, pf=None, kw=[]):
     for xs in recent:
         for st in xs:
             title = st.get('com', None)
-            if title and _thread_passes(kw, title):
+            if title and _thread_passes(tn, title):
                 print "downloading posts in thread '", title, "' due to match"
                 threadnos.append(st['no'])
 
@@ -71,27 +74,27 @@ def _santize_filter(f):
 def main():
     ac = len(sys.argv)
     if ac < 5:
-        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir> <thread keywords .. >"
+        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir> <thread search>"
         print "\t boardname - short board name, eg 'k' for weapons board"
         print "\t page count - how many pages back to download. max is 10, recommend less than 5"
         print "\t ext filter - which file types to download, eg '.webm'. defaults to all"
         print "\t destdir - destination directory to download files"
-        print "\t keywords - optional keywords to try to include threads by"
+        print "\t thread name - optional thread title to try to include threads by"
         return
 
     b = sys.argv[1]
     pc = int(sys.argv[2])
     ef = _santize_filter(sys.argv[3])
     dest = sys.argv[4]
-    kw = []
+    tn = None
     if ac > 4:
-        kw = sys.argv[5:]
+        tn = " ".join(sys.argv[5:])
 
     if not os.path.isdir(dest):
         print "invalid directory"
         return
 
-    urls = get_files(b, pc, ef, kw)
+    urls = get_files(b, pc, ef, tn)
     for url in urls:
         _download(url, dest)
 
