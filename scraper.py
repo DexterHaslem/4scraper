@@ -2,20 +2,23 @@ import api
 import os.path
 import ntpath
 import sys
+import argparse
 
 from fuzzywuzzy import fuzz
 
-KEYWORD_LD_RATIO = 65
+KEYWORD_LD_RATIO = 85
 
 
 def _thread_passes(tn, title):
     if not tn:
         return True
 
-    ratio = fuzz.token_set_ratio(tn, title)
+    # ratio = fuzz.token_set_ratio(tn, title)
+    ratio = fuzz.partial_ratio(tn, title)
 
-    if ratio > KEYWORD_LD_RATIO * 0.7:
-        print tn, ":", title, "=", ratio
+    # debug
+    # if ratio > KEYWORD_LD_RATIO * 0.8:
+    #    print tn, ":", title, "=", ratio
 
     return ratio >= KEYWORD_LD_RATIO
     # for kw in kws:
@@ -40,8 +43,8 @@ def get_files(b, pc=3, pf=None, tn=None):
             sub = st.get('sub', None)
             match_comment = comment and _thread_passes(tn, comment)
             match_sub = sub and _thread_passes(tn, sub)
-            if match_comment or match_sub:
-                print "downloading posts in thread '", sub or comment, "' due to match"
+            if match_sub or match_comment:
+                print "downloading posts in thread '", sub or comment, "'"
                 threadnos.append(st['no'])
 
     ret = []
@@ -75,31 +78,31 @@ def _santize_filter(f):
 
 
 def main():
-    ac = len(sys.argv)
-    if ac < 5:
-        print "usage:", sys.argv[0], " <boardname - required> <page count> <ext filter> <dest dir> <thread search>"
-        print "\t boardname - short board name, eg 'k' for weapons board"
-        print "\t page count - how many pages back to download. max is 10, recommend less than 5"
-        print "\t ext filter - which file types to download, eg '.webm'. defaults to all"
-        print "\t destdir - destination directory to download files"
-        print "\t thread name - optional thread title to try to include threads by"
-        return
+    parser = argparse.ArgumentParser()
+    parser.add_argument("board", help="board shortname, eg 'gif' ")
+    parser.add_argument("ext", help="file extension to download, with dot eg '.webm'")
+    parser.add_argument("dir", help="directory to save files to")
+    parser.add_argument("--pages", help="number of pages to search, defaults to 5", default=5)
+    parser.add_argument("search", help="search term(s) for threads to download", nargs="+")
 
-    b = sys.argv[1]
-    pc = int(sys.argv[2])
-    ef = _santize_filter(sys.argv[3])
-    dest = sys.argv[4]
-    tn = None
-    if ac > 4:
-        tn = " ".join(sys.argv[5:])
+    args = parser.parse_args()
 
-    if not os.path.isdir(dest):
+    board = args.board
+    ef = _santize_filter(args.ext)
+    tn = " ".join(args.search)
+
+    if not os.path.isdir(args.dir):
         print "invalid directory"
         return
 
-    urls = get_files(b, pc, ef, tn)
+    urls = get_files(args.board, args.pages, ef, tn)
+
+    if not urls:
+        print "no matching threads found"
+        return
+
     for url in urls:
-        _download(url, dest)
+        _download(url, args.dir)
 
 
 if __name__ == "__main__":
