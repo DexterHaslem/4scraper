@@ -2,7 +2,7 @@ import requests
 
 
 def _get(ep):
-    r = requests.get("http://a.4cdn.org/" + ep)
+    r = requests.get("https://a.4cdn.org/" + ep)
     return r.json()
 
 
@@ -37,4 +37,4 @@ def get_raw(url):
 def _post_file_url(b, p):
     if 'ext' not in p:
         return ''
-    return "http://i.4cdn.org/" + b + "/" + str(p['tim']) + p['ext']
+    return "https://i.4cdn.org/" + b + "/" + str(p['tim']) + p['ext']
