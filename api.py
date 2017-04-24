@@ -1,24 +1,27 @@
 import requests
 
+_API = "https://a.4cdn.org/"
+_CDN = "https://i.4cdn.org/"
+
 
 def _get(ep):
-    r = requests.get("https://a.4cdn.org/" + ep)
+    r = requests.get(_API + ep)
     return r.json()
 
 
-def _boards():
+def boards():
     return _get("boards.json")
 
 
-def _threads(b):
+def threads(b):
     return _get(b + "/threads.json")
 
 
-def _catalog(b):
+def catalog(b):
     return _get(b + "/catalog.json")
 
 
-def _posts(b, tn):
+def posts(b, tn):
     return _get(b + "/thread/" + str(tn) + ".json")['posts']
 
 
@@ -34,7 +37,7 @@ def get_raw(url):
     return r.raw
 
 
-def _post_file_url(b, p):
+def post_file_url(b, p):
     if 'ext' not in p:
         return ''
-    return "https://i.4cdn.org/" + b + "/" + str(p['tim']) + p['ext']
+    return _CDN + b + "/" + str(p['tim']) + p['ext']

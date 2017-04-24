@@ -1,7 +1,6 @@
 import api
 import os.path
 import ntpath
-import sys
 import argparse
 
 from fuzzywuzzy import fuzz
@@ -13,24 +12,16 @@ def _thread_passes(tn, title):
     if not tn:
         return True
 
-    # ratio = fuzz.token_set_ratio(tn, title)
     ratio = fuzz.partial_ratio(tn, title)
-
     # debug
     # if ratio > KEYWORD_LD_RATIO * 0.8:
     #    print tn, ":", title, "=", ratio
-
     return ratio >= KEYWORD_LD_RATIO
-    # for kw in kws:
-    #     ratio = fuzz.token_set_ratio(title, kw)
-    #     if ratio > KEYWORD_LD_RATIO:
-    #         return True
 
 
 def get_files(b, pc=3, pf=None, tn=None):
     # use catalog over threads because it has thread info
-    # t = api._threads(b)
-    t = api._catalog(b)
+    t = api.catalog(b)
 
     recent = [x['threads'] for x in t if x['page'] <= pc]
 
@@ -49,9 +40,9 @@ def get_files(b, pc=3, pf=None, tn=None):
 
     ret = []
     for tn in threadnos:
-        posts = api._posts(b, tn)
+        posts = api.posts(b, tn)
         file_posts = [p for p in posts if 'ext' in p and (not pf or p['ext'] == pf)]
-        links = [api._post_file_url(b, p) for p in file_posts]
+        links = [api.post_file_url(b, p) for p in file_posts]
         for link in links:
             ret.append(link)
 
@@ -79,15 +70,13 @@ def _santize_filter(f):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("board", help="board shortname, eg 'gif' ")
-    parser.add_argument("ext", help="file extension to download, with dot eg '.webm'")
+    parser.add_argument("board", help="board shortname, eg 'gif'")
+    parser.add_argument("ext", help="file extension to download eg 'webm'")
     parser.add_argument("dir", help="directory to save files to")
     parser.add_argument("--pages", help="number of pages to search, defaults to 5", default=5)
     parser.add_argument("search", help="search term(s) for threads to download", nargs="+")
 
     args = parser.parse_args()
-
-    board = args.board
     ef = _santize_filter(args.ext)
     tn = " ".join(args.search)
 
@@ -98,7 +87,7 @@ def main():
     urls = get_files(args.board, args.pages, ef, tn)
 
     if not urls:
-        print "no matching threads found"
+        print "no matching threads found for", tn
         return
 
     for url in urls:
