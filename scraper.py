@@ -12,7 +12,7 @@ def _thread_passes(tn, title):
     if not tn:
         return True
 
-    ratio = fuzz.partial_ratio(tn, title)
+    ratio = fuzz.partial_ratio(tn.lower(), title.lower())
     # debug
     # if ratio > KEYWORD_LD_RATIO * 0.8:
     #    print tn, ":", title, "=", ratio

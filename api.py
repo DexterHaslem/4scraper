@@ -28,7 +28,7 @@ def posts(b, tn):
 def download_file(url, path):
     r = requests.get(url, stream=True)
     with open(path, 'wb') as fd:
-        for chunk in r.iter_content(chunk_size=2048):
+        for chunk in r.iter_content(chunk_size=1024):
             fd.write(chunk)
 
 
