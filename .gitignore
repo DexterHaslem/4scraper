@@ -1,0 +1,6 @@
+*.webm
+*.png
+*.jpg
+
+*.pyc
+.idea/
